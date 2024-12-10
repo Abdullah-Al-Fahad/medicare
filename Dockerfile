@@ -1,39 +1,41 @@
-# Use PHP with Apache as the base image
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Install necessary PHP extensions for Laravel
-RUN apt-get update && apt-get install -y \
+# Install necessary dependencies
+RUN apt update && apt install -y \
+    git \
+    curl \
     libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    unzip \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip mbstring bcmath tokenizer ctype xml
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer globally
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set the working directory inside the container
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy all Laravel files into the container
-COPY . /var/www/html
+# Copy application code
+COPY . .
 
-# Copy the .env file
-COPY .env /var/www/html/.env
-
-# Set permissions for Laravel storage and cache
-RUN chown -R www-data:www-data /var/www/html \
+# Set permissions for storage and cache directories
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install Laravel dependencies using Composer
-RUN composer install --no-dev --optimize-autoloader
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Expose port 80
+# Copy custom Apache configuration
+COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
+
+# Expose port 80 for Apache
 EXPOSE 80
 
-# Set up Apache to serve the Laravel app
+# Start Apache in the foreground
 CMD ["apache2-foreground"]
