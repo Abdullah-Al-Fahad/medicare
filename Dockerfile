@@ -6,10 +6,14 @@ RUN apt update && apt install -y \
     curl \
     libpng-dev \
     libonig-dev \
-    libxml2-dev
-RUN apt clean && rm -rf /var/lib/apt/lists/*
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    libxml2-dev \
+    unzip \
+    nodejs \
+    npm \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -23,12 +27,15 @@ WORKDIR /var/www/html
 # Copy application code
 COPY . .
 
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install Node.js dependencies and build front-end assets
+RUN npm install && npm run production  # For production assets
+
 # Set permissions for storage and cache directories
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy custom Apache configuration
 COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
