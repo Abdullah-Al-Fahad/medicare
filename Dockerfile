@@ -7,7 +7,7 @@ RUN apt update && apt install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    npm # Install npm to run Vite build
+    npm 
 RUN apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
