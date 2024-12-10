@@ -1,10 +1,11 @@
 # Use PHP with Apache as the base image
 FROM php:8.1-apache
 
-# Install necessary PHP extensions for a basic Laravel app with PostgreSQL
+# Install necessary PHP extensions and dependencies for Laravel with PostgreSQL
 RUN apt-get update && apt-get install -y \
     libzip-dev \
     unzip \
+    libpq-dev \ # Install the PostgreSQL development libraries
     && docker-php-ext-install pdo pdo_pgsql mbstring tokenizer xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -24,7 +25,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Install Laravel dependencies using Composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy the .env file into the container
+# Copy the .env file
 COPY .env /var/www/html/.env
 
 # Expose port 80 for Render to map
