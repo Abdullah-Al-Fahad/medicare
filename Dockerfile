@@ -4,8 +4,8 @@ FROM php:8.1-apache
 # Update and install necessary PHP extensions for Laravel
 RUN apt-get update && apt-get install -y \
     libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libfreetype-dev \
     libzip-dev \
     unzip \
     libonig-dev \
