@@ -1,17 +1,21 @@
-# Step 1: Use a PHP image with Apache
+# Start with a PHP image with Apache
 FROM php:8.2-apache
 
-# Install system dependencies for both PHP and Node.js (including Node.js itself)
+# Install system dependencies for PHP extensions and Node.js (including npm)
 RUN apt update && apt install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    unzip \
     npm \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (pdo_mysql, mbstring, etc.)
+# Install PHP extensions (pdo_mysql, mbstring, exif, pcntl, bcmath, gd, zip)
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Enable Apache mod_rewrite
@@ -39,6 +43,5 @@ RUN npm install
 # Expose Apache port
 EXPOSE 80
 
-# Start Laravel's PHP server in the background
-# Then, run `npm run dev` in the foreground, after the server starts
+# Start Laravel's PHP server in the background, and run npm run dev
 CMD php artisan serve --host=0.0.0.0 & npm run dev
