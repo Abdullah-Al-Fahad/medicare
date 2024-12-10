@@ -1,7 +1,7 @@
 # Use PHP with Apache as the base image
 FROM php:8.1-apache
 
-# Install necessary PHP extensions for Laravel
+# Update and install required dependencies
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -11,8 +11,10 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip mbstring bcmath tokenizer ctype xml
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql zip mbstring bcmath tokenizer ctype xml \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+    
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
