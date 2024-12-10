@@ -1,16 +1,15 @@
+# Use the official PHP image with Apache
 FROM php:8.2-apache
 
-# Install system dependencies for PHP extensions
+# Install necessary dependencies
 RUN apt update && apt install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev \
-    unzip \
-    npm
-RUN apt clean && rm -rf /var/lib/apt/lists/*
+    zip \
+    && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
@@ -24,7 +23,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application code
+# Copy application code into the container
 COPY . .
 
 # Set permissions for storage and cache directories
@@ -34,18 +33,17 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install Node.js dependencies
-RUN npm install
+# Install Node.js dependencies and build assets
+RUN npm install && npm run build
 
-# Copy custom Apache configuration
-COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
+# Copy the start.sh script to the Docker container
+COPY start.sh /usr/local/bin/start.sh
+
+# Ensure the script is executable
+RUN chmod +x /usr/local/bin/start.sh
 
 # Expose port 80 for Apache
 EXPOSE 80
 
-# Copy the start.sh script and set it as the entry point
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
-
-# Start Apache and npm in the background using the script
-CMD ["start.sh"]
+# Set the entry point to the start.sh script
+CMD ["/usr/local/bin/start.sh"]
