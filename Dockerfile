@@ -13,11 +13,11 @@ RUN apt update && apt install -y \
     libfreetype6-dev \
     unzip \
     npm \
-    libpq-dev \ 
+    libpq-dev \  # Install the PostgreSQL development libraries
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (pdo_mysql, mbstring, exif, pcntl, bcmath, gd, zip)
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+# Install PHP extensions (pdo_mysql, mbstring, exif, pcntl, bcmath, gd, zip, pdo_pgsql)
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip pdo_pgsql
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -44,9 +44,8 @@ RUN npm install
 # Expose Apache port
 EXPOSE 80
 
-# Start Laravel's PHP server in the background, and run npm run dev
+# Start the server, run migrations, and then start npm in sequence
 CMD php artisan serve --host=0.0.0.0 & \
     sleep 5 && php artisan migrate --force && \
     npm run dev && \
     tail -f /dev/null
-
