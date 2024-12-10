@@ -1,3 +1,4 @@
+
 # Use PHP with Apache as the base image
 FROM php:8.1-apache
 
