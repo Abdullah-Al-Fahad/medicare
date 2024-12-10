@@ -1,15 +1,15 @@
 FROM php:8.2-apache
 
-# Install necessary dependencies
+# Install system dependencies for PHP extensions
 RUN apt update && apt install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev \   
-    unzip \        
-    npm            
+    libzip-dev \
+    unzip \
+    npm
 RUN apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
@@ -34,8 +34,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install Node.js dependencies and build front-end assets
-RUN npm install && npm run build  # This runs the 'build' script for production assets
+# Install Node.js dependencies
+RUN npm install
 
 # Copy custom Apache configuration
 COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
@@ -43,6 +43,9 @@ COPY apache-config.conf /etc/apache2/sites-available/000-default.conf
 # Expose port 80 for Apache
 EXPOSE 80
 
-# Start Apache in the foreground
-CMD ["apache2-foreground"]
+# Copy the start.sh script and set it as the entry point
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
 
+# Start Apache and npm in the background using the script
+CMD ["start.sh"]
