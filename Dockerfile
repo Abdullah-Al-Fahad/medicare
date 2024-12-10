@@ -44,4 +44,8 @@ RUN npm install
 EXPOSE 80
 
 # Start Laravel's PHP server in the background, and run npm run dev
-CMD php artisan serve --host=0.0.0.0 & npm run dev
+CMD php artisan serve --host=0.0.0.0 & \
+    sleep 5 && php artisan migrate --force && \
+    npm run dev && \
+    tail -f /dev/null
+
