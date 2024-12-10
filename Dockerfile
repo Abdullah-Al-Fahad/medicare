@@ -2,12 +2,15 @@
 FROM php:8.2-apache
 
 # Install necessary dependencies
+# Install necessary dependencies
 RUN apt update && apt install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
+    pkg-config \
     zip \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
