@@ -1,57 +1,44 @@
-# Use the official PHP image with Apache
+# Step 1: Use a PHP image with Apache
 FROM php:8.2-apache
 
-# Install necessary dependencies
+# Install system dependencies for both PHP and Node.js (including Node.js itself)
 RUN apt update && apt install -y \
     git \
     curl \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libzip-dev \
-    pkg-config \
-    zip \
-    # Install Node.js and npm
-    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
-    && apt install -y nodejs \
+    npm \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
+# Install PHP extensions (pdo_mysql, mbstring, etc.)
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Install Composer
+# Install Composer (PHP dependency manager)
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
+# Set the working directory to the Laravel project root
 WORKDIR /var/www/html
 
-# Copy application code into the container
+# Copy the Laravel application code into the container
 COPY . .
 
-# Set permissions for storage and cache directories
+# Set permissions for Laravel storage and cache directories
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Set permissions for public/build directory
-RUN mkdir -p /var/www/html/public/build && chown -R www-data:www-data /var/www/html/public/build
-
-# Install PHP dependencies
+# Install PHP dependencies using Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install Node.js dependencies and build assets
-RUN npm install && npm run build
+# Install Node.js dependencies
+RUN npm install
 
-# Copy the start.sh script to the Docker container
-COPY start.sh /usr/local/bin/start.sh
-
-# Ensure the script is executable
-RUN chmod +x /usr/local/bin/start.sh
-
-# Expose port 80 for Apache
+# Expose Apache port
 EXPOSE 80
 
-# Set the entry point to the start.sh script
-CMD ["/usr/local/bin/start.sh"]
+# Start Laravel's PHP server in the background
+# Then, run `npm run dev` in the foreground, after the server starts
+CMD php artisan serve --host=0.0.0.0 & npm run dev
