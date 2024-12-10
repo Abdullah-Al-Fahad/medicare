@@ -13,6 +13,7 @@ RUN apt update && apt install -y \
     libfreetype6-dev \
     unzip \
     npm \
+    libpq-dev \ 
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions (pdo_mysql, mbstring, exif, pcntl, bcmath, gd, zip)
