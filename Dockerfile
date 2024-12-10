@@ -1,17 +1,11 @@
 # Use PHP with Apache as the base image
 FROM php:8.1-apache
 
-# Update and install necessary PHP extensions for Laravel
+# Install necessary PHP extensions for a basic Laravel app with PostgreSQL
 RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype-dev \
     libzip-dev \
     unzip \
-    libonig-dev \
-    libxml2-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip mbstring bcmath tokenizer ctype xml \
+    && docker-php-ext-install pdo pdo_pgsql mbstring tokenizer xml \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Composer globally
@@ -30,7 +24,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Install Laravel dependencies using Composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy the .env file
+# Copy the .env file into the container
 COPY .env /var/www/html/.env
 
 # Expose port 80 for Render to map
