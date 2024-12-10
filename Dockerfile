@@ -2,7 +2,6 @@
 FROM php:8.2-apache
 
 # Install necessary dependencies
-# Install necessary dependencies
 RUN apt update && apt install -y \
     git \
     curl \
@@ -12,6 +11,9 @@ RUN apt update && apt install -y \
     libzip-dev \
     pkg-config \
     zip \
+    # Install Node.js and npm
+    && curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt install -y nodejs \
     && apt clean && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
